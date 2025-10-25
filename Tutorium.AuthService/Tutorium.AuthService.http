@@ -1,0 +1,6 @@
+@Tutorium.AuthService_HostAddress = http://localhost:5163
+
+GET {{Tutorium.AuthService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
