@@ -12,7 +12,7 @@ namespace Tutorium.AuthService.Api.Controllers
         [HttpGet(template: "version")]
         public async Task<ActionResult<string>> GetCounterObjectMeasuringValues()
         {
-            return "User Service 1.1";
+            return "Auth Service 1.1";
         }
     }
 }
