@@ -1,3 +1,7 @@
+using Tutorium.AuthService.Core.Models.Google;
+using Tutorium.AuthService.Core.Services.Interfaces;
+using Tutorium.AuthService.Core.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
@@ -11,18 +15,13 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+ConfigureAppSettings(builder);
+ConfigureServices(builder);
 
 var app = builder.Build();
 
 app.UseCors("AllowFrontend");
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -30,9 +29,34 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
+
+#region Setup Helpers
+
+void ConfigureAppSettings(WebApplicationBuilder builder)
+{
+    builder.Configuration
+       .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+       .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true);
+
+    if (builder.Environment.IsDevelopment())
+        builder.Configuration.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true);
+    
+    builder.Configuration.AddEnvironmentVariables();
+}
+
+void ConfigureServices(WebApplicationBuilder builder)
+{
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+
+    builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
+
+    builder.Services.Configure<GoogleOptions>(builder.Configuration.GetSection("Google"));
+}
+
+#endregion Setup Helpers
+

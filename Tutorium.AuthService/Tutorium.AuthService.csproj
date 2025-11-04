@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Tutorium.AuthService.Api\Tutorium.AuthService.Api.csproj" />
+    <ProjectReference Include="..\Tutorium.AuthService.Core\Tutorium.AuthService.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -14,3 +14,5 @@ obj/
 
 # Docker cache
 *.cache
+
+appsettings*.local.json
