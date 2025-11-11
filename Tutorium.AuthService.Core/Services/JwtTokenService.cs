@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Tutorium.AuthService.Core.Models.JwtToken;
 using Tutorium.AuthService.Core.Services.Interfaces;
@@ -9,16 +10,19 @@ namespace Tutorium.AuthService.Core.Services
 {
     public class JwtTokenService : IJwtTokenService
     {
-        private readonly string _secretKey;
+        private readonly JwtTokenOptions _jwtTokenOptions;
 
-        public JwtTokenService(JwtTokenOptions jwtTokenOptions)
+        public JwtTokenService(IOptions<JwtTokenOptions> jwtTokenOptions)
         {
-            _secretKey = jwtTokenOptions.Secret ?? throw new Exception("Missing JWT Secret");
+            _jwtTokenOptions = jwtTokenOptions.Value;
+
+            if (_jwtTokenOptions.Secret is null || _jwtTokenOptions.FrontendUrl is null)
+                throw new Exception("Missing JWT Options");
         }
 
         public string GenerateToken(int userId, string email)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtTokenOptions.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -36,5 +40,8 @@ namespace Tutorium.AuthService.Core.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public string BuildRedirectUrl(int userId, string email) 
+            => $"{_jwtTokenOptions.FrontendUrl}/oauth/callback?token={GenerateToken(userId, email)}";
     }
 }

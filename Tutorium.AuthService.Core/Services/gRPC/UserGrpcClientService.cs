@@ -1,5 +1,7 @@
 ﻿using Grpc.Net.Client;
+using Microsoft.Extensions.Options;
 using Tutorium.Shared;
+using Tutorium.Shared.Options;
 
 namespace Tutorium.AuthService.Core.Services
 {
@@ -7,10 +9,10 @@ namespace Tutorium.AuthService.Core.Services
     {
         private readonly User.UserClient _client;
 
-        public UserGrpcClientService(string baseAddress)
+        public UserGrpcClientService(IOptions<GrpcSettings> grpcSettings)
         {
             var httpHandler = new HttpClientHandler();
-            var channel = GrpcChannel.ForAddress(baseAddress);
+            var channel = GrpcChannel.ForAddress(grpcSettings.Value.UserServiceUrl);
 
             _client = new User.UserClient(channel);
         }

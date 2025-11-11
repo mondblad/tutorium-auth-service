@@ -1,8 +1,8 @@
 using Tutorium.AuthService.Core.Models.Google;
-using Tutorium.AuthService.Core.Services.Interfaces;
-using Tutorium.AuthService.Core.Services;
-using Tutorium.AuthService.Core.Models.Kafka;
 using Tutorium.AuthService.Core.Models.JwtToken;
+using Tutorium.AuthService.Core.Services;
+using Tutorium.AuthService.Core.Services.Interfaces;
+using Tutorium.Shared.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,15 +46,15 @@ void ConfigureServices(WebApplicationBuilder builder)
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
-    builder.Services.AddSingleton<KafkaProducerService>();
-    builder.Services.AddSingleton(new UserGrpcClientService("https://localhost:8502"));
+    builder.Services.AddSingleton<UserGrpcClientService>();
 
     builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
     builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
+    
     builder.Services.Configure<GoogleOptions>(builder.Configuration.GetSection("Google"));
-    builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection("Kafka"));
     builder.Services.Configure<JwtTokenOptions>(builder.Configuration.GetSection("Jwt"));
+    builder.Services.Configure<GrpcSettings>(builder.Configuration.GetSection("gRPC"));
 }
 
 void ConfigureApp(WebApplication app)

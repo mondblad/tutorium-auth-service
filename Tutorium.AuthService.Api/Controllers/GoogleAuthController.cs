@@ -35,15 +35,11 @@ namespace Tutorium.AuthService.Api.Controllers
             if (email is null)
                 return Forbid();
 
-            var user = await _userGrpcClientService.GetOrCreateUser(email, null);
+            var user = await _userGrpcClientService.GetOrCreateUser(email, string.Empty);
             if (user is null)
                 return NotFound();
 
-            var jwt = _jwtTokenService.GenerateToken(user.UserId, email);
-
-            var redirectUrl = $"https://localhost:3000/oauth/callback?token={jwt}";
-
-            return Redirect(redirectUrl);
+            return Redirect(_jwtTokenService.BuildRedirectUrl(user.UserId, email));
         }
 
         private string GetCallbackUrl()
