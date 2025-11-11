@@ -1,0 +1,3 @@
+[submodule "Tutorium.Shared"]
+	path = Tutorium.Shared
+	url = https://github.com/mondblad/tutorium-shared.git
