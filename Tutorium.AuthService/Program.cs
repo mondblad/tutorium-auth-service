@@ -1,6 +1,8 @@
 using Tutorium.AuthService.Core.Models.Google;
 using Tutorium.AuthService.Core.Services.Interfaces;
 using Tutorium.AuthService.Core.Services;
+using Tutorium.AuthService.Core.Models.Kafka;
+using Tutorium.AuthService.Core.Models.JwtToken;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,17 +22,8 @@ ConfigureServices(builder);
 
 var app = builder.Build();
 
-app.UseCors("AllowFrontend");
+ConfigureApp(app);
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
 app.Run();
 
 #region Setup Helpers
@@ -53,9 +46,30 @@ void ConfigureServices(WebApplicationBuilder builder)
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    builder.Services.AddSingleton<KafkaProducerService>();
+    builder.Services.AddSingleton(new UserGrpcClientService("https://localhost:8502"));
+
     builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
+    builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
     builder.Services.Configure<GoogleOptions>(builder.Configuration.GetSection("Google"));
+    builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection("Kafka"));
+    builder.Services.Configure<JwtTokenOptions>(builder.Configuration.GetSection("Jwt"));
+}
+
+void ConfigureApp(WebApplication app)
+{
+    app.UseCors("AllowFrontend");
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+    app.UseAuthorization();
+    app.MapControllers();
 }
 
 #endregion Setup Helpers

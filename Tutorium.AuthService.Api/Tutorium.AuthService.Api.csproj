@@ -13,5 +13,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Tutorium.AuthService.Core\Tutorium.AuthService.Core.csproj" />
   </ItemGroup>
-
 </Project>

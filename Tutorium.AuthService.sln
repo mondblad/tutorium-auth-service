@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorium.AuthService", "Tutorium.AuthService\Tutorium.AuthService.csproj", "{57DD27A2-82C2-4F89-89FD-47EFAA374D35}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorium.AuthService.Core", "Tutorium.AuthService.Core\Tutorium.AuthService.Core.csproj", "{BD272393-F2AD-4D07-A67F-00B578DCF792}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorium.AuthService.Infrastructure", "Tutorium.AuthService.Infrastructure\Tutorium.AuthService.Infrastructure.csproj", "{54DA8DCC-1989-4D9F-868F-12CFBA7B03A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorium.Shared", "Tutorium.Shared\Tutorium.Shared.csproj", "{1D9665A1-A3DF-4429-837A-CF78125AB724}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{54DA8DCC-1989-4D9F-868F-12CFBA7B03A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54DA8DCC-1989-4D9F-868F-12CFBA7B03A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54DA8DCC-1989-4D9F-868F-12CFBA7B03A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D9665A1-A3DF-4429-837A-CF78125AB724}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D9665A1-A3DF-4429-837A-CF78125AB724}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D9665A1-A3DF-4429-837A-CF78125AB724}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D9665A1-A3DF-4429-837A-CF78125AB724}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
