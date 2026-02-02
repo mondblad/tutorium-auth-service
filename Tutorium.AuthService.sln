@@ -13,6 +13,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorium.AuthService.Infras
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorium.Shared", "Tutorium.Shared\Tutorium.Shared.csproj", "{1D9665A1-A3DF-4429-837A-CF78125AB724}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorium.AuthService.Grpc", "Tutorium.AuthService.Grpc\Tutorium.AuthService.Grpc.csproj", "{C0416808-230D-431C-A9F3-0BB5BE9BAE49}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tutorium.GrpcContracts", "Tutorium.GrpcContracts", "{C6625BFD-A64D-488C-B7D8-DE2CD5D6E395}"
+	ProjectSection(SolutionItems) = preProject
+		Tutorium.GrpcContracts\notification.proto = Tutorium.GrpcContracts\notification.proto
+		Tutorium.GrpcContracts\user.proto = Tutorium.GrpcContracts\user.proto
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +47,10 @@ Global
 		{1D9665A1-A3DF-4429-837A-CF78125AB724}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D9665A1-A3DF-4429-837A-CF78125AB724}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D9665A1-A3DF-4429-837A-CF78125AB724}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0416808-230D-431C-A9F3-0BB5BE9BAE49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0416808-230D-431C-A9F3-0BB5BE9BAE49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0416808-230D-431C-A9F3-0BB5BE9BAE49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0416808-230D-431C-A9F3-0BB5BE9BAE49}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

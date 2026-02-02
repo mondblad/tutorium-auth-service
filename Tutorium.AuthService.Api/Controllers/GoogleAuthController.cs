@@ -11,8 +11,8 @@ namespace Tutorium.AuthService.Api.Controllers
     {
         private readonly IGoogleAuthService _googleAuthService;
         private readonly IJwtTokenService _jwtTokenService;
-        private readonly UserGrpcClientService _userGrpcClientService;
-
+        //private readonly UserGrpcClientService _userGrpcClientService;
+        /*
         public GoogleAuthController(
             IGoogleAuthService googleAuthService,
             IJwtTokenService jwtTokenService,
@@ -58,6 +58,6 @@ namespace Tutorium.AuthService.Api.Controllers
                 throw new InvalidOperationException("Не удалось сгенерировать callback URL");
 
             return url;
-        }
+        }*/
     }
 }

@@ -1,8 +1,18 @@
+using StackExchange.Redis;
+using Tutorium.AuthService.Core.Abstractions;
 using Tutorium.AuthService.Core.Models.Google;
 using Tutorium.AuthService.Core.Models.JwtToken;
+using Tutorium.AuthService.Core.Registration.Abstractions;
+using Tutorium.AuthService.Core.Registration.UseCase;
 using Tutorium.AuthService.Core.Services;
 using Tutorium.AuthService.Core.Services.Interfaces;
-using Tutorium.Shared.Options;
+using Tutorium.AuthService.Grpc.Clients;
+using Tutorium.AuthService.Infrastructure.Jwt;
+using Tutorium.AuthService.Infrastructure.Middleware;
+using Tutorium.AuthService.Infrastructure.Redis;
+using Tutorium.Shared.Utils.Grpc;
+using static Tutorium.Grpc.Notification.NotificationGrpc;
+using static Tutorium.Grpc.User.UserGrpc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,19 +56,28 @@ void ConfigureServices(WebApplicationBuilder builder)
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
-    builder.Services.AddSingleton<UserGrpcClientService>();
-
     builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
     builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
-    
+    var connectionString = builder.Configuration.GetConnectionString("Redis");
+    builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(connectionString));
+
+    builder.Services.AddScoped<IRegistrationAttemptRepository, RedisRegistrationAttemptRepository>();
+    builder.Services.AddScoped<IRegisterUseCase, RegisterUseCase>();
+
+    builder.Services.AddScoped<IUserGrpcClient, UserGrpcSafeClient>();
+    builder.Services.AddScoped<INotificationGrpcClient, NotificationGrpcSafeClient>();
+
     builder.Services.Configure<GoogleOptions>(builder.Configuration.GetSection("Google"));
     builder.Services.Configure<JwtTokenOptions>(builder.Configuration.GetSection("Jwt"));
-    builder.Services.Configure<GrpcSettings>(builder.Configuration.GetSection("gRPC"));
+
+    builder.RegisterGrpcClient<NotificationGrpcClient>("NotificationClient");
+    builder.RegisterGrpcClient<UserGrpcClient>("UserClient"); 
 }
 
 void ConfigureApp(WebApplication app)
 {
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseCors("AllowFrontend");
 
     if (app.Environment.IsDevelopment())

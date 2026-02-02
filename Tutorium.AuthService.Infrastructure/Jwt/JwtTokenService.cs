@@ -1,12 +1,12 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Tutorium.AuthService.Core.Models.JwtToken;
 using Tutorium.AuthService.Core.Services.Interfaces;
 
-namespace Tutorium.AuthService.Core.Services
+namespace Tutorium.AuthService.Infrastructure.Jwt
 {
     public class JwtTokenService : IJwtTokenService
     {
@@ -32,8 +32,8 @@ namespace Tutorium.AuthService.Core.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: "tutorium-auth",
-                audience: "tutorium-frontend",
+                issuer: JwtConst.JWT_ISSUER,
+                audience: JwtConst.JWT_AUDIENCE_FRONTEND,
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: creds);
@@ -41,7 +41,7 @@ namespace Tutorium.AuthService.Core.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public string BuildRedirectUrl(int userId, string email) 
+        public string BuildRedirectUrl(int userId, string email)
             => $"{_jwtTokenOptions.FrontendUrl}/oauth/callback?token={GenerateToken(userId, email)}";
     }
 }

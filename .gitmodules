@@ -1,3 +1,6 @@
 [submodule "Tutorium.Shared"]
 	path = Tutorium.Shared
 	url = https://github.com/mondblad/tutorium-shared.git
+[submodule "Tutorium.GrpcContracts"]
+	path = Tutorium.GrpcContracts
+	url = https://github.com/mondblad/tutorium-grpcContracts.git
