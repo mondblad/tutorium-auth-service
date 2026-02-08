@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using Tutorium.AuthService.Core.Abstractions;
 using Tutorium.AuthService.Core.Models.Google;
@@ -9,7 +10,9 @@ using Tutorium.AuthService.Core.Services.Interfaces;
 using Tutorium.AuthService.Grpc.Clients;
 using Tutorium.AuthService.Infrastructure.Jwt;
 using Tutorium.AuthService.Infrastructure.Middleware;
+using Tutorium.AuthService.Infrastructure.Postgres;
 using Tutorium.AuthService.Infrastructure.Redis;
+using Tutorium.Shared.Utils.EntityFramework.Base;
 using Tutorium.Shared.Utils.Grpc;
 using static Tutorium.Grpc.Notification.NotificationGrpc;
 using static Tutorium.Grpc.User.UserGrpc;
@@ -18,10 +21,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
+    options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+
+    options.AddPolicy("AllowFrontend", policy =>
+        {
+            policy.WithOrigins("http://localhost:3000", "https://localhost:3000", "https://localhost:8000", "https://localhost:8000")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
@@ -56,13 +66,13 @@ void ConfigureServices(WebApplicationBuilder builder)
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    builder.Services
+        .AddRedisModule(builder.Configuration)
+        .AddPostgresModule(builder.Configuration);
+    
     builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
     builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
-
-    var connectionString = builder.Configuration.GetConnectionString("Redis");
-    builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(connectionString));
-
-    builder.Services.AddScoped<IRegistrationAttemptRepository, RedisRegistrationAttemptRepository>();
+    
     builder.Services.AddScoped<IRegisterUseCase, RegisterUseCase>();
 
     builder.Services.AddScoped<IUserGrpcClient, UserGrpcSafeClient>();
@@ -77,9 +87,19 @@ void ConfigureServices(WebApplicationBuilder builder)
 
 void ConfigureApp(WebApplication app)
 {
-    app.UseMiddleware<ExceptionHandlingMiddleware>();
-    app.UseCors("AllowFrontend");
+    app.ApplyPostgresMigrations();
+    //using var scope = app.Services.CreateScope();
+    //var db = scope.ServiceProvider.GetRequiredService<PgContext>();
+    //db.Database.Migrate();
+    //using var scope = app.Services.CreateScope();
+    //var db = scope.ServiceProvider.GetRequiredService<BasePgContext>();
+    //db.Database.Migrate();
 
+
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
+    app.UseCors("AllowAll");
+    //app.UseCors("AllowFrontend");
+    
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();

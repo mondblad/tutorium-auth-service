@@ -1,8 +1,7 @@
-﻿using Tutorium.Grpc.User;
-using Tutorium.Shared.Utils.Grpc;
-using Tutorium.AuthService.Core.Abstractions;
-using static Tutorium.Grpc.Notification.NotificationGrpc;
+﻿using Tutorium.AuthService.Core.Abstractions;
 using Tutorium.Grpc.Notification;
+using Tutorium.Shared.Utils.Grpc;
+using static Tutorium.Grpc.Notification.NotificationGrpc;
 
 namespace Tutorium.AuthService.Grpc.Clients
 {

@@ -1,14 +1,14 @@
-﻿using Tutorium.AuthService.Core.Registration.Models;
+﻿using Tutorium.AuthService.Core.Registration.Models.RegistrationDraft;
 
 namespace Tutorium.AuthService.Core.Registration.Abstractions
 {
     public interface IRegisterUseCase
     {
-        Task<Ulid> StartRegistration();
-        Task UpdateRegistrationAttempt(RegistrationAttemptDto attempt);
-        Task<RegistrationAttemptDto> GetRegistrationAttempt(Ulid token);
+        Task<Guid> CreateRegistrationDraft(RegistrationDraftRuntimeCreateDto createDto);
+        Task UpdateRegistrationDraft(Guid token, RegistrationDraftRuntimeUpdateDto updateDto);
+        Task<RegistrationDraftRuntimeDto> GetRegistrationDraft(Guid token);
 
-        Task<Ulid> StartRegistration(string email, string password);
-        Task ConfirmRegistration(Ulid token, string code);
+        Task<Guid> SendConfirmationCode(Guid token, RegistrationDraftRuntimeSubmitDto submitDto);
+        //Task ConfirmRegistration(Ulid token, string code);
     }
 }

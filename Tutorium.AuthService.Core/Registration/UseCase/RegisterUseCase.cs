@@ -1,86 +1,123 @@
-﻿using Grpc.Core;
-using Microsoft.AspNetCore.Identity;
-using Tutorium.AuthService.Core.Abstractions;
+﻿using Tutorium.AuthService.Core.Abstractions;
 using Tutorium.AuthService.Core.Exceptions;
 using Tutorium.AuthService.Core.Registration.Abstractions;
-using Tutorium.AuthService.Core.Registration.Models;
+using Tutorium.AuthService.Core.Registration.Models.RegistrationAttempt;
+using Tutorium.AuthService.Core.Registration.Models.RegistrationDraft;
 
 namespace Tutorium.AuthService.Core.Registration.UseCase
 {
-    internal class RegisterUseCase : IRegisterUseCase
+    public class RegisterUseCase : IRegisterUseCase
     {
         private readonly IUserGrpcClient _userGrpcClient;
         private readonly INotificationGrpcClient _notificationGrpcClient;
-        private readonly IRegistrationAttemptRepository _registrationAttemptRepository;
+
+        private readonly IRegistrationAttemptRuntimeRepository _attemptRuntimeRepository;
+        private readonly IRegistrationAttemptStateRepository _attemptStateRepository;
+        private readonly IRegistrationDraftRuntimeRepository _draftRuntimeRepository;
+        private readonly IRegistrationDraftStateRepository _draftStateRepository;
 
         public RegisterUseCase(
             IUserGrpcClient userGrpcClient,
             INotificationGrpcClient notificationGrpcClient,
-            IRegistrationAttemptRepository registrationAttemptRepository)
+            IRegistrationAttemptRuntimeRepository attemptRuntimeRepository,
+            IRegistrationAttemptStateRepository attemptStateRepository,
+            IRegistrationDraftRuntimeRepository draftRuntimeRepository,
+            IRegistrationDraftStateRepository draftStateRepository)
         {
             _userGrpcClient = userGrpcClient;
+
             _notificationGrpcClient = notificationGrpcClient;
-            _registrationAttemptRepository = registrationAttemptRepository;
+            _attemptRuntimeRepository = attemptRuntimeRepository;
+            _attemptStateRepository = attemptStateRepository;
+            _draftRuntimeRepository = draftRuntimeRepository;
+            _draftStateRepository = draftStateRepository;
         }
 
-        public async Task<Ulid> StartRegistration()
+        public async Task<Guid> CreateRegistrationDraft(RegistrationDraftRuntimeCreateDto createDto)
         {
-            var attempt = new RegistrationAttempt();
+            var attempt = new RegistrationDraftRuntime(createDto);
 
-            await _registrationAttemptRepository.Add(attempt);
+            await _draftRuntimeRepository.Add(attempt);
 
             return attempt.Token;
         }
 
-        public async Task UpdateRegistrationAttempt(RegistrationAttemptUpdateDto dto)
+        public async Task UpdateRegistrationDraft(Guid token, RegistrationDraftRuntimeUpdateDto updateDto)
         {
-            var attempt = await _registrationAttemptRepository.GetByTokenAsync(dto.Token);
+            var draft = await _draftRuntimeRepository.GetByTokenAsync(token);
 
-            if (attempt is null)
+            if (draft is null)
                 throw new RegistrationAttemptNotFoundException();
 
-            attempt.Update(dto);
+            draft.Update(updateDto);
 
-            await _registrationAttemptRepository.Update(attempt);
+            await _draftRuntimeRepository.Update(draft);
         }
 
-        public async Task<RegistrationAttemptDto> GetRegistrationAttempt(Ulid token)
+        public async Task<RegistrationDraftRuntimeDto> GetRegistrationDraft(Guid token)
         {
-            var attempt = await _registrationAttemptRepository.GetByTokenAsync(token);
+            var draft = await _draftRuntimeRepository.GetByTokenAsync(token);
 
-            if (attempt is null)
+            if (draft is null)
                 throw new RegistrationAttemptNotFoundException();
 
-            return attempt.GetRegistrationAttemptDto();
+            return draft.GetRegistrationDraftRuntimeDto();
         }
 
-        public async Task<Ulid> StartRegistration(string email, string password)
+        public async Task<Guid> SendConfirmationCode(Guid token, RegistrationDraftRuntimeSubmitDto submitDto)
         {
-            /*var isUserExists = await _userGrpcClient.IsUserExistsAsync(email);
+            var draft = await _draftRuntimeRepository.GetByTokenAsync(token);
 
-            if (isUserExists is true)
-                throw new UserAlreadyExistsException(email); 
-            
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            if (draft is null)
+                throw new RegistrationAttemptNotFoundException();
 
-            var attempt = new RegistrationAttempt(email, passwordHash);
-            await _registrationAttemptRepository.test(attempt);
+            draft.Update(submitDto);
+            await _draftRuntimeRepository.Update(draft);
 
-            await _notificationGrpcClient.SendEmailVerificationCodeAsync(attempt.Email, attempt.ConfirmationCode);*/
+            RegistrationDraftState draftState = new RegistrationDraftState(draft);
+            _draftStateRepository.Add(draftState);
+            await _draftStateRepository.SaveChangesAsync();
 
-            return Ulid.Empty; //attempt.Token;
+            RegistrationAttemptState attemptState = new RegistrationAttemptState(draftState.Id);
+            _attemptStateRepository.Add(attemptState);
+            await _attemptStateRepository.SaveChangesAsync();
+
+            try
+            {
+                var isUserExists = await _userGrpcClient.IsUserExistsAsync(draft.Email!);
+                if (isUserExists)
+                {
+                    attemptState.Status = RegistrationAttemptStatus.UserIsExist;
+                    throw new UserAlreadyExistsException(draft.Email!);
+                }
+
+                var attemptRuntime = new RegistrationAttemptRuntime(attemptState.Id);
+                await _attemptRuntimeRepository.Add(attemptRuntime);
+
+                await _notificationGrpcClient.SendEmailVerificationCodeAsync(draftState.Email, attemptRuntime.ConfirmationCode);
+
+                attemptState.Status = RegistrationAttemptStatus.CodeWasSend;
+
+                return attemptRuntime.Token;
+            }
+            finally
+            {
+                await _attemptStateRepository.SaveChangesAsync();
+            }
         }
 
-        public async Task ConfirmRegistration(Ulid token, string code)
+        public async Task ConfirmRegistration(Guid token, string code)
         {
-            var attempt = await _registrationAttemptRepository.GetByTokenAsync(token);
+            var attempt = await _attemptRuntimeRepository.GetByTokenAsync(token);
 
             if (attempt is null)
                 throw new RegistrationAttemptNotFoundException();
             else if (attempt.ConfirmationCode != code)
                 throw new InvalidConfirmationCodeException();
 
-            await _userGrpcClient.CreateUserAsync(attempt.Email, attempt.PasswordHash, attempt.CreatedAtUtc);
+            _attemptStateRepository.Query();
+
+            await _userGrpcClient.CreateUserAsync(attempt.Email, attempt.PasswordHash, attempt.StartRegistrationAt);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Tutorium.AuthService.Core.Registration.Abstractions;
-using Tutorium.AuthService.Core.Registration.Models;
+using Tutorium.AuthService.Core.Registration.Models.RegistrationDraft;
 using Tutorium.Shared.Utils.Controllers;
 
 namespace Tutorium.AuthService.Api.Controllers
@@ -14,38 +14,40 @@ namespace Tutorium.AuthService.Api.Controllers
             _registerUseCase = registerUseCase;
         }
 
-        [HttpPost(template: "/registration")]
-        public async Task<ActionResult<Ulid>> GetRegistrationToken()
+        [HttpGet(template: "/registration/drafts/{draftToken}")]
+        public async Task<ActionResult<RegistrationDraftRuntimeDto>> GetRegistrationDraft(string draftToken)
         {
-            return await _registerUseCase.StartRegistration();
+            return await _registerUseCase.GetRegistrationDraft(Guid.Parse(draftToken));
         }
 
-        [HttpPut(template: "/registration")]
-        public async Task<ActionResult> UpdateValue([FromBody] RegistrationAttemptDto dto)
+        [HttpPost(template: "/registration/drafts")]
+        public async Task<ActionResult<string>> CreateRegistrationDraft([FromBody] RegistrationDraftRuntimeCreateDto createDto)
         {
-            await _registerUseCase.UpdateRegistrationAttempt(dto);
+            var draftToken = await _registerUseCase.CreateRegistrationDraft(createDto);
+            
+            return draftToken.ToString("N");
+        }
+
+        [HttpPut(template: "/registration/drafts/{draftToken}")]
+        public async Task<ActionResult> UpdateRegistrationDraft(string draftToken, [FromBody] RegistrationDraftRuntimeUpdateDto updateDto)
+        {
+            await _registerUseCase.UpdateRegistrationDraft(Guid.Parse(draftToken), updateDto);
 
             return Ok();
         }
 
-        [HttpPut(template: "/registration/{token}")]
-        public async Task<ActionResult<RegistrationAttemptDto>> UpdateValue([FromQuery] Ulid token)
+        [HttpPost(template: "/registration/confirm/{draftToken}")]
+        public async Task<ActionResult<string>> SendConfirmationCode(string draftToken, [FromBody] RegistrationDraftRuntimeSubmitDto submitDto)
         {
-            await _registerUseCase.GetRegistrationAttempt(token);
+            var emailConfirmToken = await _registerUseCase.SendConfirmationCode(Guid.Parse(draftToken), submitDto);
 
-            return Ok();
+            return emailConfirmToken.ToString("N");
         }
-
-        [HttpPost(template: "/registration")]
-        public async Task<ActionResult<Ulid>> StartRegistration([FromBody] RegisterDto register)
+        
+        [HttpPut(template: "/registration/confirm/{token}")]
+        public async Task<ActionResult> ConfirmCode(string token, [FromBody] RegistrationDraftRuntimeSubmitDto submitDto)
         {
-            return await _registerUseCase.StartRegistration(register.Email, register.Password);
-        }
-
-        [HttpPost(template: "/registration/confirm")]
-        public async Task<ActionResult> ConfirmRegistration([FromBody] testConfirm conf)
-        {
-            await _registerUseCase.ConfirmRegistration(conf.Token, conf.Code);
+            await _registerUseCase.SendConfirmationCode(Guid.Parse(token), submitDto);
 
             return Ok();
         }
@@ -54,12 +56,6 @@ namespace Tutorium.AuthService.Api.Controllers
         {
             public string Email { get; set; }
             public string Password { get; set; }
-        }
-
-        public class testConfirm
-        {
-            public Ulid Token { get; set; }
-            public string Code { get; set; }
         }
     }
 }
