@@ -24,9 +24,9 @@ namespace Tutorium.AuthService.Grpc.Clients
                 "UserService.IsUserExists failed");
         }
 
-        public Task CreateUserAsync(string email, string passwordHash, DateTime createdAtUtc)
+        public Task<int> CreateUserAsync(string email, string passwordHash, DateTime createdAtUtc)
         {
-            var request = new CreateUserRequest
+            var request = new CreateUserRequest()
             {
                 Email = email,
                 PasswordHash = passwordHash,
@@ -34,7 +34,11 @@ namespace Tutorium.AuthService.Grpc.Clients
             };
 
             return ExecuteAsync(
-                async () => await _client.CreateUserAsync(request).ResponseAsync,
+                async () =>
+                {
+                    var response = await _client.CreateUserAsync(request).ResponseAsync;
+                    return response.UserId;
+                },
                 "UserService.CreateUser failed"
             );
         }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Tutorium.AuthService.Core.Services;
-using Tutorium.AuthService.Core.Services.Interfaces;
+//using Tutorium.AuthService.Core.Services;
+//using Tutorium.AuthService.Core.Services.Interfaces;
 
 namespace Tutorium.AuthService.Api.Controllers
 {
@@ -9,8 +9,8 @@ namespace Tutorium.AuthService.Api.Controllers
     [Route("[controller]")]
     public class GoogleAuthController : ControllerBase
     {
-        private readonly IGoogleAuthService _googleAuthService;
-        private readonly IJwtTokenService _jwtTokenService;
+        //private readonly IGoogleAuthService _googleAuthService;
+        //private readonly IJwtTokenService _jwtTokenService;
         //private readonly UserGrpcClientService _userGrpcClientService;
         /*
         public GoogleAuthController(

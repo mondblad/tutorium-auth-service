@@ -2,8 +2,8 @@
 
 namespace Tutorium.AuthService.Core.Exceptions
 {
-    public class RegistrationAttemptNotFoundException : DomainException
+    /*public class RegistrationAttemptNotFoundException : DomainException
     {
         public RegistrationAttemptNotFoundException() : base("Registration attempt not found") { }
-    }
+    }*/
 }

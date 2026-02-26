@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
-using Tutorium.AuthService.Core.Registration.Abstractions;
+using Tutorium.AuthService.Application.Identity.Abstractions;
 using Tutorium.AuthService.Infrastructure.Redis.Repositories;
 
 namespace Tutorium.AuthService.Infrastructure.Redis
@@ -16,8 +16,7 @@ namespace Tutorium.AuthService.Infrastructure.Redis
 
             services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(connectionRedisString));
 
-            services.AddScoped<IRegistrationDraftRuntimeRepository, RedisRegistrationDraftRuntimeRepository>();
-            services.AddScoped<IRegistrationAttemptRuntimeRepository, RedisRegistrationAttemptRuntimeRepository>();
+            services.AddScoped<IPendingRegistrationRepository, RedisPendingRegistrationRepository>();
 
             return services;
         }

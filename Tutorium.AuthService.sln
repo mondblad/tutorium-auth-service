@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tutorium.GrpcContracts", "T
 		Tutorium.GrpcContracts\user.proto = Tutorium.GrpcContracts\user.proto
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorium.AuthService.Application", "Tutorium.AuthService.Application\Tutorium.AuthService.Application.csproj", "{014D36AA-150D-4534-94D7-DD9964CA5790}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{C0416808-230D-431C-A9F3-0BB5BE9BAE49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0416808-230D-431C-A9F3-0BB5BE9BAE49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0416808-230D-431C-A9F3-0BB5BE9BAE49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{014D36AA-150D-4534-94D7-DD9964CA5790}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{014D36AA-150D-4534-94D7-DD9964CA5790}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{014D36AA-150D-4534-94D7-DD9964CA5790}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{014D36AA-150D-4534-94D7-DD9964CA5790}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

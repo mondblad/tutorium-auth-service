@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Tutorium.AuthService.Core.Models.JwtToken;
-using Tutorium.AuthService.Core.Services.Interfaces;
+using Tutorium.AuthService.Application.Identity.Abstractions;
 
 namespace Tutorium.AuthService.Infrastructure.Jwt
 {
@@ -16,24 +16,26 @@ namespace Tutorium.AuthService.Infrastructure.Jwt
         {
             _jwtTokenOptions = jwtTokenOptions.Value;
 
-            if (_jwtTokenOptions.Secret is null || _jwtTokenOptions.FrontendUrl is null)
+            if (jwtTokenOptions is null
+                || string.IsNullOrEmpty(_jwtTokenOptions.Secret) 
+                || string.IsNullOrEmpty(_jwtTokenOptions.FrontendUrl)
+                || string.IsNullOrEmpty(_jwtTokenOptions.Issuer)
+                || string.IsNullOrEmpty(_jwtTokenOptions.Audience))
                 throw new Exception("Missing JWT Options");
         }
 
-        public string GenerateToken(int userId, string email)
+        public string GenerateToken(int userId)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtTokenOptions.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
-            {
+            var claims = new[] {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, email)
             };
 
             var token = new JwtSecurityToken(
-                issuer: JwtConst.JWT_ISSUER,
-                audience: JwtConst.JWT_AUDIENCE_FRONTEND,
+                issuer: _jwtTokenOptions.Issuer,
+                audience: _jwtTokenOptions.Audience,
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: creds);
@@ -41,7 +43,7 @@ namespace Tutorium.AuthService.Infrastructure.Jwt
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public string BuildRedirectUrl(int userId, string email)
-            => $"{_jwtTokenOptions.FrontendUrl}/oauth/callback?token={GenerateToken(userId, email)}";
+        //public string BuildRedirectUrl(int userId, string email)
+        //    => $"{_jwtTokenOptions.FrontendUrl}/oauth/callback?token={GenerateToken(userId, email)}";
     }
 }

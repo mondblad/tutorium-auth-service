@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Tutorium.AuthService.Core.Registration.Abstractions;
+using Tutorium.AuthService.Application.Identity.Abstractions;
+using Tutorium.AuthService.Core.Identity.Abstractions;
+using Tutorium.AuthService.Infrastructure.Postgres.Identity;
 using Tutorium.AuthService.Infrastructure.Postgres.Repositories;
 
 namespace Tutorium.AuthService.Infrastructure.Postgres
@@ -17,8 +19,8 @@ namespace Tutorium.AuthService.Infrastructure.Postgres
 
             services.AddDbContext<PgContext>(options => options.UseNpgsql(postgresConnectionString));
 
-            services.AddScoped<IRegistrationDraftStateRepository, RegistrationDraftStateRepository>();
-            services.AddScoped<IRegistrationAttemptStateRepository, RegistrationAttemptStateRepository>();
+            services.AddScoped<IEmailUniquenessChecker, EmailUniquenessChecker>();
+            services.AddScoped<IUserRepository, UserAuthenticationRepositories>();
 
             return services;
         }

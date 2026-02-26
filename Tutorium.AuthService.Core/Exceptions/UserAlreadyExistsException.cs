@@ -2,8 +2,8 @@
 
 namespace Tutorium.AuthService.Core.Exceptions
 {
-    public class UserAlreadyExistsException : DomainException
+    /*public class UserAlreadyExistsException : DomainException
     {
         public UserAlreadyExistsException(string email) : base($"User with email '{email}' already exists") { }
-    }
+    }*/
 }

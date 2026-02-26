@@ -2,8 +2,8 @@
 
 namespace Tutorium.AuthService.Core.Exceptions
 {
-    public class InvalidPasswordException : DomainException
+    /*public class InvalidPasswordException : DomainException
     {
         public InvalidPasswordException() : base("Password does not meet complexity requirements") { }
-    }
+    }*/
 }

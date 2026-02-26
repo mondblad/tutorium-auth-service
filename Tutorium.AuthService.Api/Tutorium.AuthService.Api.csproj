@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Tutorium.AuthService.Application\Tutorium.AuthService.Application.csproj" />
     <ProjectReference Include="..\Tutorium.AuthService.Core\Tutorium.AuthService.Core.csproj" />
     <ProjectReference Include="..\Tutorium.AuthService.Grpc\Tutorium.AuthService.Grpc.csproj" />
     <ProjectReference Include="..\Tutorium.Shared\Tutorium.Shared.csproj" />
