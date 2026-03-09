@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 using Tutorium.AuthService.Application.Identity.Abstractions.UseCases;
 using Tutorium.AuthService.Application.Identity.DTOs;
-using Tutorium.AuthService.Application.Identity.Runtime;
 using Tutorium.AuthService.Application.Identity.ValueObjects;
+using Tutorium.AuthService.Core.Sessions.Models;
 using Tutorium.AuthService.Core.Shared.ValueObjects;
 using Tutorium.Shared.Utils.Controllers;
 
@@ -22,7 +23,7 @@ namespace Tutorium.AuthService.Api.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost(template: "initiateRegistration")]
+        [HttpPost(template: "registration/initiateRegistration")]
         public async Task<ActionResult<RegistrationResponse>> PostInitiateRegistrationAsync([FromBody] AuthRequest dto)
         {
             var email = Email.Create(dto.Email);
@@ -33,25 +34,55 @@ namespace Tutorium.AuthService.Api.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost(template: "confirmRegistration/{token}")]
-        public async Task<ActionResult<AuthResponse>> PostConfirmRegistrationAsync(string token, [FromBody] ConfirmRegistrationRequest dto)
+        [HttpPost(template: "registration/confirmRegistration/{token}")]
+        public async Task<ActionResult> PostConfirmRegistrationAsync(string token, [FromBody] ConfirmRegistrationRequest dto)
         {
+            if (!Guid.TryParse(token, out var guid))
+                return BadRequest("Invalid token format");
+
             var verificationCode = VerificationCode.CreateFromString(dto.Code);
 
-            var jwtToken = await _registrationUseCase.ConfirmRegistrationAsync(Guid.Parse(token), verificationCode);
+            var session = await _registrationUseCase.ConfirmRegistrationAsync(guid, verificationCode);
 
-            return new AuthResponse(jwtToken);
+            SetSessionInCookies(session);
+
+            return Ok();
+        }
+
+        [AllowAnonymous]
+        [HttpGet(template: "registration/email/{token}")]
+        public async Task<ActionResult<RegistrationEmailResponse>> GetRegistrationEmailAsync(string token)
+        {
+            if (!Guid.TryParse(token, out var guid))
+                return BadRequest("Invalid token format");
+
+            var email = await _registrationUseCase.GetEmailAsync(guid);
+
+            return new RegistrationEmailResponse(email.Value);
         }
 
         [AllowAnonymous]
         [HttpPost(template: "login/")]
-        public async Task<ActionResult<AuthResponse>> PostLoginAsync([FromBody] AuthRequest dto)
+        public async Task<ActionResult> PostLoginAsync([FromBody] AuthRequest dto)
         {
             var email = Email.Create(dto.Email);
 
-            var jwtToken = await _loginUserUseCase.AuthenticateAsync(email, dto.Password);
+            var session = await _loginUserUseCase.AuthenticateAsync(email, dto.Password);
 
-            return new AuthResponse(jwtToken);
+            SetSessionInCookies(session);
+
+            return Ok();
+        }
+
+        private void SetSessionInCookies(Session session)
+        {
+            Response.Cookies.Append("session_id", session.SessionId, new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                MaxAge = TimeSpan.FromDays(7)
+            });
         }
 
         /*[HttpGet(template: "/registration/drafts/{draftToken}")]

@@ -8,11 +8,16 @@ using Tutorium.AuthService.Core.Identity.Abstractions;
 using Tutorium.AuthService.Application.Identity.Abstractions.UseCases;
 using Tutorium.AuthService.Application.Identity.Abstractions;
 using Tutorium.AuthService.Application.Identity.Abstractions.Security;
+using Newtonsoft.Json.Linq;
+using Tutorium.AuthService.Core.Sessions.Models;
+using Tutorium.AuthService.Application.Sessions.Abstractions;
 
 namespace Tutorium.AuthService.Application.Identity.UseCase
 {
     public class RegistrationUseCase : IRegistrationUseCase
     {
+        private readonly ISessionManager _sessionManager;
+
         private readonly IUserGrpcClient _userGrpcClient;
         private readonly INotificationGrpcClient _notificationGrpcClient;
 
@@ -27,7 +32,8 @@ namespace Tutorium.AuthService.Application.Identity.UseCase
 
         public RegistrationUseCase(IPendingRegistrationRepository pendingRegistrationRepository, IUserGrpcClient userGrpcClient,
             IUserRepository userRepository, IEmailUniquenessChecker emailUniquenessChecker, IPasswordHasher passwordHasher, 
-            IPasswordValidator passwordValidator, INotificationGrpcClient notificationGrpcClient, IJwtTokenService jwtTokenService)
+            IPasswordValidator passwordValidator, INotificationGrpcClient notificationGrpcClient, IJwtTokenService jwtTokenService,
+            ISessionManager sessionManager)
         {
             _pendingRegistrationRepository = pendingRegistrationRepository;
             _userGrpcClient = userGrpcClient;
@@ -37,6 +43,7 @@ namespace Tutorium.AuthService.Application.Identity.UseCase
             _passwordHasher = passwordHasher;
             _passwordValidator = passwordValidator;
             _jwtTokenService = jwtTokenService;
+            _sessionManager = sessionManager;
         }
         
         public async Task<Guid> InitiateRegistrationAsync(Email email, string password)
@@ -44,7 +51,7 @@ namespace Tutorium.AuthService.Application.Identity.UseCase
             _passwordValidator.Validate(password);
             var passwordHash = _passwordHasher.Hash(password);
 
-            if (_emailUniquenessChecker.IsUnique(email))
+            if (!_emailUniquenessChecker.IsUnique(email))
                 throw new ArgumentException("Email must be unique");
 
             var code = VerificationCode.Create();
@@ -58,9 +65,9 @@ namespace Tutorium.AuthService.Application.Identity.UseCase
             return runtime.Token;
         }
 
-        public async Task<string?> ConfirmRegistrationAsync(Guid Token, VerificationCode code)
+        public async Task<Session> ConfirmRegistrationAsync(Guid token, VerificationCode code)
         {
-            var runtime = await _pendingRegistrationRepository.GetByTokenAsync(Token);
+            var runtime = await _pendingRegistrationRepository.GetByTokenAsync(token);
             if (runtime is null)
                 throw new NullReferenceException();
 
@@ -73,7 +80,16 @@ namespace Tutorium.AuthService.Application.Identity.UseCase
 
             await _userRepository.Add(userAuthentication);
 
-            return _jwtTokenService.GenerateToken(userId);
+            return await _sessionManager.CreateSessionAsync(userId);
+        }
+
+        public async Task<Email> GetEmailAsync(Guid token)
+        {
+            var runtime = await _pendingRegistrationRepository.GetByTokenAsync(token);
+            if (runtime is null)
+                throw new NullReferenceException();
+
+            return runtime.Email;
         }
     }
 }

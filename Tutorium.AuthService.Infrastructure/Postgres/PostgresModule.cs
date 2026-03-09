@@ -11,7 +11,7 @@ namespace Tutorium.AuthService.Infrastructure.Postgres
 {
     public static class PostgresModule
     {
-        public static IServiceCollection AddPostgresModule(this IServiceCollection services, IConfiguration configuration)
+        internal static IServiceCollection AddPostgresModule(this IServiceCollection services, IConfiguration configuration)
         {
             var postgresConnectionString = configuration.GetConnectionString("Postgres");
             if (string.IsNullOrWhiteSpace(postgresConnectionString))
